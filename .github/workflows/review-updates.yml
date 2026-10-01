@@ -1,0 +1,41 @@
+name: Validate updated input-shape PRs
+'on':
+  push:
+    branches:
+    - ci/review-updates-20261001
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - pr: 2872
+          commit: 82723c899d56e09d76e2faa748401759685376a6
+          test: test_range_dim.py
+          os: ubuntu-24.04
+        - pr: 2872
+          commit: 82723c899d56e09d76e2faa748401759685376a6
+          test: test_range_dim.py
+          os: macos-latest
+        - pr: 2873
+          commit: 1f95d1c486c1077bc05f4fd66d967698274600f1
+          test: test_enumerated_shapes.py
+          os: ubuntu-24.04
+        - pr: 2873
+          commit: 1f95d1c486c1077bc05f4fd66d967698274600f1
+          test: test_enumerated_shapes.py
+          os: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ matrix.commit }}
+        persist-credentials: false
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: python -m pip install -e . pytest
+    - run: python -m pytest coremltools/converters/mil/mil/tests/${{ matrix.test }} -q
